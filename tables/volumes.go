@@ -20,8 +20,9 @@ type VolumesTable struct {
 }
 
 type VolumeRow struct {
-	volume  *corev1.Volume
-	fromPod string
+	volume           *corev1.Volume
+	fromPod          string
+	fromPodNamespace string
 }
 
 // NewVolumesTable creates a new VolumesTable
@@ -32,6 +33,7 @@ func NewVolumesTable(kubeclient kubernetes.Interface) *VolumesTable {
 		table.TextColumn("type"),
 		table.TextColumn("source"),
 		table.TextColumn("from_pod"),
+		table.TextColumn("from_pod_namespace"),
 	}
 	return &VolumesTable{
 		name:    "kubernetes_volumes",
@@ -57,8 +59,9 @@ func (t *VolumesTable) Generate(ctx context.Context, queryContext table.QueryCon
 
 	for i, volumeRow := range allVolumes {
 		rows[i] = map[string]string{
-			"name":     volumeRow.volume.Name,
-			"from_pod": volumeRow.fromPod,
+			"name":               volumeRow.volume.Name,
+			"from_pod":           volumeRow.fromPod,
+			"from_pod_namespace": volumeRow.fromPodNamespace,
 		}
 		// if the volume source is not with zero value
 		if (corev1.VolumeSource{}) != volumeRow.volume.VolumeSource {
@@ -68,7 +71,7 @@ func (t *VolumesTable) Generate(ctx context.Context, queryContext table.QueryCon
 	return rows, nil
 }
 
-// getPathAndTypeFromVolume gets the
+// getPathAndTypeFromVolume gets type and the json string.
 func (t *VolumesTable) getPathAndTypeFromVolume(volume *corev1.VolumeSource) (string, string) {
 	var typ, source string
 	// Because the VolumeSource struct contains alot of optional fields,
@@ -97,8 +100,9 @@ func (t *VolumesTable) getVolumesFromAllPods() []*VolumeRow {
 		if pod.Spec.Volumes != nil {
 			for _, volume := range pod.Spec.Volumes {
 				volumes = append(volumes, &VolumeRow{
-					volume:  volume.DeepCopy(),
-					fromPod: pod.Name,
+					volume:           volume.DeepCopy(),
+					fromPod:          pod.Name,
+					fromPodNamespace: pod.Namespace,
 				})
 			}
 		}

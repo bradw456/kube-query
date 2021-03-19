@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	 "github.com/aquasecurity/kube-query/tables"
-	 "github.com/aquasecurity/kube-query/utils"
+	"github.com/aquasecurity/kube-query/tables"
+	"github.com/aquasecurity/kube-query/utils"
 	osqueryTable "github.com/kolide/osquery-go/plugin/table"
 )
 
@@ -14,13 +14,13 @@ func main() {
 	// Parsing flags
 	kubeconfig := flag.String("kubeconfig", "", "absolute path to the kubeconfig file (can be set by KUBECONFIG environment variable)")
 	socketPath := flag.String("socket", "", "absolute path to the osquery socket")
-	
+
 	// currently we do not care for these flags, but they must be set for the auto loader of osquery
 	// the verbose flag is optionally given.
-	flag.String("timeout", "", "flag for specifying wait time before registering on autoload") 
+	flag.String("timeout", "", "flag for specifying wait time before registering on autoload")
 	flag.String("interval", "", "flag for specifying wait time before registering on autoload")
 	flag.Bool("verbose", false, "show more verbose messages (not yet implemented)")
-	
+
 	flag.Parse()
 	if len(*kubeconfig) == 0 {
 		// if not specified from flag, try getting from env variable
@@ -30,7 +30,7 @@ func main() {
 		}
 	}
 	if len(*socketPath) == 0 {
-		log.Fatal("Socket was not specified, set the --socket flag")		
+		log.Fatal("Socket was not specified, set the --socket flag")
 		os.Exit(1)
 	}
 
@@ -58,6 +58,8 @@ func main() {
 		tables.NewVolumesTable(kubeclient),
 		tables.NewNodesTable(kubeclient, metricsclient), // specific columns use the metrics client
 		tables.NewDeploymentsTable(kubeclient),
+		tables.NewPersistentVolumesTable(kubeclient),
+		tables.NewPersistentVolumeClaimsTable(kubeclient),
 	}
 
 	// Registering all tables

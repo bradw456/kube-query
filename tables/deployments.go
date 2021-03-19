@@ -45,7 +45,7 @@ func (t *DeploymentsTable) Columns() []table.ColumnDefinition {
 
 // Generate uses the api to retrieve information on all pods
 func (t *DeploymentsTable) Generate(ctx context.Context, queryContext table.QueryContext) ([]map[string]string, error) {
-	depls, err := t.client.ExtensionsV1beta1().Deployments("").List(metav1.ListOptions{})
+	depls, err := t.client.AppsV1().Deployments("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Println("could not get deployments from k8s api")
 		return nil, err
